@@ -1,18 +1,22 @@
-NEW_HOSTNAME='worker2.bennink.me'
-CLI_NAME=$(echo ${NEW_HOSTNAME} | awk -F '[_.]' '{print $1}')
+export NEW_HOSTNAME='worker2.bennink.me'
+export CLI_NAME=$(echo ${NEW_HOSTNAME} | awk -F '[_.]' '{print $1}')
 
-sudo sed -i 's/(?<=command=").*?(?="$)/' /root/.ssh/authorized_keys
 sudo apt-get update
 sudo apt-get install -y apt-transport-https software-properties-common
 sudo wget https://gist.githubusercontent.com/1benik/076196fdf11807fcba1d13104b446d18/raw/7c30b3cd056a3aae82e555930cf69152dc33a5d8/sources.list -O /etc/apt/sources.list
-curl -fsSL https://apt.dockerproject.org/gpg | sudo apt-key add -
-sudo add-apt-repository -y ppa:saltstack/salt
+sudo systemctl mask unattended-upgrades
 sudo apt-get update
-sudo apt-get -y upgrade
+sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy upgrade
+sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy dist-upgrade
+sudo apt-get install -y curl
+sudo wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
+sudo wget https://gist.githubusercontent.com/1benik/9985b33f43a6b806b93badce37d33c34/raw/4b9762af0e72f8e6a691cc7286b1ad7fb0d7b335/saltstack.list -O /etc/apt/sources.list.d/saltstack.list
+sudo apt-get update
 sudo rm -f /etc/localtime
 sudo ln -s /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
-sudo echo ${NEW_HOSTNAME} > /etc/hostname
-sudo sed -i 's/(?<=127\.0\.1\.1).*?(?=$)/$NEW_HOSTNAME' /etc/hosts
+sudo sed -i "s/$(cat /etc/hostname)/$NEW_HOSTNAME/g" /etc/hosts
+sudo sed -i "s/$(cat /etc/hostname | awk -F '[_.]' '{print $1}')/$CLI_NAME/g" /etc/hosts
+sudo sed -i "s/$(cat /etc/hostname)/$NEW_HOSTNAME/g" /etc/hostname
 sudo apt-get -y install salt-minion salt-ssh
 sudo wget https://gist.githubusercontent.com/1benik/078069a1cb1f18d19abeb588f3027da2/raw/eeb72493e8552fce118e50d41cfd490f5e61a759/minion-worker -O  /etc/salt/minion
 sudo reboot

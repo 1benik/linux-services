@@ -5,25 +5,27 @@ install packages:
       - munin-plugins-extra
       - syslog-ng
       - htop
-      - curl
       - python3-pip
       - apt-transport-https
       - software-properties-common
 
 install docker-py:
-  pip.installed:
-    - name: docker-py
-    - bin_env: '/usr/bin/pip3'
+  cmd.run:
+    - name: easy_install docker-py
 
 /etc/munin/munin-node.conf:
   file.managed:
     - name: /etc/munin/munin-node.conf
-    - source: salt://workers/munin-node.conf
+    - source: salt://worker/munin-node.conf
 
 /etc/syslog-ng/syslog-ng.conf:
   file.managed:
     - name: /etc/syslog-ng/syslog-ng.conf
-    - source: salt://workers/syslog-ng.conf
+    - source: salt://worker/syslog-ng.conf
+
+fix syslog-ng.conf:
+  cmd.run:
+    - name: perl -pe 'chomp if eof' /etc/syslog-ng/syslog-ng.conf
 
 restart munin-node:
   module.run:
@@ -37,17 +39,17 @@ restart syslog-ng:
 
 add docker key:
   cmd.run:
-    - name: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+    - name: apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 
 install docker:
   pkg.installed:
     - pkgs:
-      - docker-ce
+      - docker-engine
 
 docker-join.sh:
   cmd.script:
     - name: docker-join.sh
-    - source: salt://workers/docker-join.sh
+    - source: salt://worker/docker-join.sh
 
 fetch docker image:
   dockerng.image_present:
