@@ -49,10 +49,13 @@ docker-join.sh:
     - name: docker-join.sh
     - source: salt://workers/docker-join.sh
 
-run-wordpress-docker:
+fetch docker image:
+  dockerng.image_present:
+    - force: true
+    - name: benik/wordpress-container-linux-services
+
+run wordpress docker:
   dockerng.running:
-    - image: 'benik/wordpress-container-linux-services'
-    - detach: True
-    - port_bindings:
-      - 443:443/tcp
-    - start: True
+    - name: wordpress-container-linux-services
+    - image: benik/wordpress-container-linux-services
+    - port_bindings: 443:443
