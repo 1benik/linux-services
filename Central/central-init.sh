@@ -58,7 +58,7 @@ function after_reboot() {
     sudo wget https://gist.githubusercontent.com/1benik/c66a2e0ef2054c41811f4b21bcc1bfb3/raw/1609698f139a972c88cb091e2ac84918e8d894fc/master -O /etc/salt/master
     sudo wget https://gist.githubusercontent.com/1benik/e21c6c7669590cb849c97b47a410aa4f/raw/68335b458dcc91ea8ad4dacde234583d0f342f2b/minion-central -O  /etc/salt/minion
     sudo wget https://gist.githubusercontent.com/1benik/617169ce54c80389412a7d1e4c445a6e/raw/3a85332fb8d03821e20a03a3554a269fc1581bda/top.sls -O /srv/salt/top.sls
-    sudo wget https://gist.githubusercontent.com/1benik/e3c3dce13d54e5b04b4f7baf23255cb6/raw/e55575d839c1c78fd82b9e68d52c5c1c003b0bb7/worker.sls -O /srv/salt/worker.sls
+    sudo wget https://gist.githubusercontent.com/1benik/e3c3dce13d54e5b04b4f7baf23255cb6/raw/ffe7193e60f6df9ba17124f834fc9d7f3880cd83/worker.sls -O /srv/salt/worker.sls
     sudo wget https://gist.githubusercontent.com/1benik/900dce3bf9dbf5cee18333571ae36863/raw/2548a64f33d3e08c51990d51eefa0100f5d74d47/syslog-ng-workers.conf -O /srv/salt/worker/syslog-ng.conf
     sudo wget https://gist.githubusercontent.com/1benik/453fc85e4e111072ccea4af243a3250d/raw/82e1e86b318ecb5053bcc4f000ab1c569e1be3fd/munin-node.conf -O /srv/salt/worker/munin-node.conf
     sudo systemctl restart salt-master.service salt-minion.service
