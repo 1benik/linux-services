@@ -23,10 +23,6 @@ install docker-py:
     - name: /etc/syslog-ng/syslog-ng.conf
     - source: salt://worker/syslog-ng.conf
 
-fix syslog-ng.conf:
-  cmd.run:
-    - name: perl -pe 'chomp if eof' /etc/syslog-ng/syslog-ng.conf
-
 restart munin-node:
   module.run:
     - name: service.restart
