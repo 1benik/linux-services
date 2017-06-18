@@ -21,5 +21,3 @@ https://hub.docker.com/r/eugeneware/docker-wordpress-nginx/
 https://docs.saltstack.com/en/getstarted/config/pillar.html
 
 https://hub.docker.com/r/benik/wordpress-container-linux-services/
-
-https://opsnotice.xyz/docker-with-saltstack/
