@@ -86,14 +86,14 @@ function after_reboot() {
 
 }
 
-if [ -f /var/run/reboot-required ]; then
+if [ -f /var/run/init-reboot ]; then
     after_reboot
-    sudo rm -f /var/run/reboot_required
+    sudo rm -f /var/run/init-reboot
     sudo update-rc.d central-init.sh remove
     sudo rm -f /etc/init.d/central-init.sh
 else
     before_reboot
-    sudo touch /var/run/reboot-required
+    sudo touch /var/run/init-reboot
     sudo update-rc.d central-init.sh defaults
     sudo reboot
 fi
