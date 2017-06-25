@@ -60,7 +60,7 @@ function after_reboot() {
     sudo rm -f /etc/nginx/sites-enabled/default
     sudo systemctl restart nginx.service syslog-ng.service
     sudo apt-get update
-    sudo apt-get install salt-master salt-minion salt-ssh salt-cloud docker-engine
+    sudo apt-get install -y salt-master salt-minion salt-ssh salt-cloud docker-engine
     sudo pip3 install docker-py
     sudo mkdir -p /srv/salt/worker
     sudo wget https://gist.githubusercontent.com/1benik/c66a2e0ef2054c41811f4b21bcc1bfb3/raw/1609698f139a972c88cb091e2ac84918e8d894fc/master -O /etc/salt/master
@@ -76,12 +76,14 @@ function after_reboot() {
     sudo wget https://gist.githubusercontent.com/1benik/1ac59c666e7bc6954763dd7982907e7a/raw/6fa81d32e0eb10cce3b09f7b147a68034532b295/kubernetes.list -O /etc/apt/sources.list.d/kubernetes.list
     sudo apt-get update
     sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+    sudo kubeadm init
     sudo cp /etc/kubernetes/admin.conf $HOME/
     sudo chown $(id -u):$(id -g) $HOME/admin.conf
+    KUBECONFIG=$HOME/admin.conf
     sudo kubectl apply -n kube-system -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
     sudo docker swarm init
-    sudo echo 'docker swarm join --token' $(docker swarm join-token -q worker) $(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')':2377' > /srv/salt/worker/docker-join.sh
-    sudo echo 'kubeadm join --token' $(kubeadm token list | awk 'NR==2{print $1}') $(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')':6443' > /srv/salt/worker/kubernetes-join.sh
+    sudo sh -c echo "docker swarm join --token' $(sudo docker swarm join-token -q worker) $(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')':2377 > /srv/salt/worker/docker-join.sh"
+    sudo sh -c echo "kubeadm join --token' $(sudo kubeadm token list | awk 'NR==2{print $1}') $(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')':6443 > /srv/salt/worker/kubernetes-join.sh > /srv/salt/worker/kubernetes-join.sh"
     sudo salt '*' state.apply
 
 }
