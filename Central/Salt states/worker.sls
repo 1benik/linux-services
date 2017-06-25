@@ -8,6 +8,7 @@ install packages:
       - python3-pip
       - apt-transport-https
       - software-properties-common
+      - libnet-cidr-perl
 
 install docker-py:
   cmd.run:

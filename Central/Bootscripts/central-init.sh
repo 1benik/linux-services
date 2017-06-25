@@ -13,8 +13,8 @@
 
 function before_reboot() {
 
-    export NEW_HOSTNAME='central.bennink.me'
-    export CLI_NAME=$(echo ${NEW_HOSTNAME} | awk -F '[_.]' '{print $1}')
+    NEW_HOSTNAME='central.bennink.me'
+    CLI_NAME=$(echo ${NEW_HOSTNAME} | awk -F '[_.]' '{print $1}')
 
     sudo apt-get update
     sudo apt-get install -y htop curl apt-transport-https software-properties-common
@@ -23,7 +23,7 @@ function before_reboot() {
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy upgrade
     sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy dist-upgrade
-    sudo apt-get install -y curl grub2
+    sudo apt-get install -y curl grub2 sshpass
     sudo update-grub2
     sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
     sudo wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
@@ -33,6 +33,8 @@ function before_reboot() {
     sudo sed -i "s/$(cat /etc/hostname).novalocal/$NEW_HOSTNAME/g" /etc/hosts
     sudo sed -i "s/$(cat /etc/hostname | awk -F '[_.]' '{print $1}')/$CLI_NAME/g" /etc/hosts
     sudo sed -i "s/$(cat /etc/hostname)/$NEW_HOSTNAME/g" /etc/hostname
+    sudo sshpass -p 'QHJktE8d7xF8cjVn' ssh -o StrictHostKeyChecking=no debian@worker1.bennink.me "sudo sed -i "s/MASTER/$(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')/g" /etc/salt/minion; sudo systemctl restart salt-minion.service"
+    sudo sshpass -p 'QHJktE8d7xF8cjVn' ssh -o StrictHostKeyChecking=no debian@worker2.bennink.me "sudo sed -i "s/MASTER/$(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')/g" /etc/salt/minion; sudo systemctl restart salt-minion.service"
 
 }
 
@@ -40,9 +42,14 @@ function after_reboot() {
 
 
     sudo apt-get install -y munin munin-plugins-extra nginx syslog-ng syslog-ng-core python3-pip
-    sudo wget https://gist.githubusercontent.com/1benik/da8c10b04b8cd5937f5bdf9f9c703104/raw/9bcc3405dde0c43907b07228282b0a3b0db1a12a/syslog-ng.conf -O /etc/syslog-ng/syslog-ng.conf
-    sudo wget https://gist.githubusercontent.com/1benik/f5b7e83a498c65e62f6d801a874ee208/raw/f0095682af2cc2a2ae42b7e6ae6464a35cfed4a1/munin.conf -O /etc/munin/munin.conf
-    sudo wget https://gist.githubusercontent.com/1benik/551b303a82ba4d1c54c30959042fa80c/raw/abfa686fa958c453370272d49622f2ad4c6c7beb/central.bennink.me -O /etc/nginx/sites-available/central.bennink.me
+    sudo wget https://gist.githubusercontent.com/1benik/da8c10b04b8cd5937f5bdf9f9c703104/raw/55739a4ac74b81357c555ca6911c13c5f2cf4aaa/syslog-ng.conf -O /etc/syslog-ng/syslog-ng.conf
+    sudo sed -i "s/MASTER/$(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')/g" /etc/syslog-ng/syslog-ng.conf
+    sudo wget https://gist.githubusercontent.com/1benik/f5b7e83a498c65e62f6d801a874ee208/raw/319d3171c7310719113c1aae2955cc9f63200b7f/munin.conf -O /etc/munin/munin.conf
+    WORKER1_IP=$(sshpass -p 'QHJktE8d7xF8cjVn' ssh -o StrictHostKeyChecking=no debian@worker1.bennink.me "ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*'")
+    WORKER2_IP=$(sshpass -p 'QHJktE8d7xF8cjVn' ssh -o StrictHostKeyChecking=no debian@worker2.bennink.me "ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*'")
+    sudo sed -i "s/MASTER/$WORKER1_IP/g" /etc/munin/munin.conf
+    sudo sed -i "s/MASTER/$WORKER2_IP/g" /etc/munin/munin.conf
+    sudo wget https://gist.githubusercontent.com/1benik/551b303a82ba4d1c54c30959042fa80c/raw/790c1301cf7603b69e1364198d6a3ffab0d2097f/central.bennink.me -O /etc/nginx/sites-available/central.bennink.me
     sudo wget https://gist.githubusercontent.com/1benik/98b8c65506064bc7c381eb77e0d8ecb6/raw/8c78962a8b218b5c1cf7ebc3e7897aeb740580bc/.htpasswd -O /etc/nginx/.htpasswd
     sudo wget https://gist.githubusercontent.com/1benik/2c1ef1d34665d17aa7527b0e94545afe/raw/779439a769381006ae7b16df14aee32fbb3ca96a/certificate.crt -O /etc/ssl/certs/central.bennink.me.crt
     sudo wget https://gist.githubusercontent.com/1benik/63b253ce2363701af53e889da528952a/raw/399294abd67b6fa4a4886e60ca61e5254861c616/private.key -O /etc/ssl/private/central.bennink.me.key
@@ -59,9 +66,10 @@ function after_reboot() {
     sudo wget https://gist.githubusercontent.com/1benik/c66a2e0ef2054c41811f4b21bcc1bfb3/raw/1609698f139a972c88cb091e2ac84918e8d894fc/master -O /etc/salt/master
     sudo wget https://gist.githubusercontent.com/1benik/e21c6c7669590cb849c97b47a410aa4f/raw/68335b458dcc91ea8ad4dacde234583d0f342f2b/minion-central -O  /etc/salt/minion
     sudo wget https://gist.githubusercontent.com/1benik/617169ce54c80389412a7d1e4c445a6e/raw/3a85332fb8d03821e20a03a3554a269fc1581bda/top.sls -O /srv/salt/top.sls
-    sudo wget https://gist.githubusercontent.com/1benik/e3c3dce13d54e5b04b4f7baf23255cb6/raw/2034ec83acb858e636b7e4e599df38f71f1badf7/worker.sls -O /srv/salt/worker.sls
+    sudo wget https://gist.githubusercontent.com/1benik/e3c3dce13d54e5b04b4f7baf23255cb6/raw/bfe17dc76664c45b5cf91894c9f6ed52e7c1a32f/worker.sls -O /srv/salt/worker.sls
     sudo wget https://gist.githubusercontent.com/1benik/900dce3bf9dbf5cee18333571ae36863/raw/2548a64f33d3e08c51990d51eefa0100f5d74d47/syslog-ng-workers.conf -O /srv/salt/worker/syslog-ng.conf
-    sudo wget https://gist.githubusercontent.com/1benik/453fc85e4e111072ccea4af243a3250d/raw/82e1e86b318ecb5053bcc4f000ab1c569e1be3fd/munin-node.conf -O /srv/salt/worker/munin-node.conf
+    sudo wget https://gist.githubusercontent.com/1benik/453fc85e4e111072ccea4af243a3250d/raw/bc13a777467d1991ea45c27c70bf47305ef0d863/munin-node.conf -O /srv/salt/worker/munin-node.conf
+    sudo sed -i "s/MASTER/$(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')/g" /srv/salt/worker/munin-node.conf
     sudo wget https://gist.githubusercontent.com/1benik/1ac59c666e7bc6954763dd7982907e7a/raw/6fa81d32e0eb10cce3b09f7b147a68034532b295/kubernetes.list -O /srv/salt/worker/kubernetes.list
     sudo systemctl restart salt-master.service salt-minion.service
     sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
@@ -70,11 +78,10 @@ function after_reboot() {
     sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
     sudo cp /etc/kubernetes/admin.conf $HOME/
     sudo chown $(id -u):$(id -g) $HOME/admin.conf
-    export KUBECONFIG=$HOME/admin.conf
     sudo kubectl apply -n kube-system -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
     sudo docker swarm init
-    sudo echo 'docker swarm join --token' $(docker swarm join-token -q worker) '10.4.0.10:2377' > /srv/salt/worker/docker-join.sh
-    sudo echo 'kubeadm join --token' $(kubeadm token list | awk 'NR==2{print $1}') '10.4.0.10:6443' > /srv/salt/worker/kubernetes-join.sh
+    sudo echo 'docker swarm join --token' $(docker swarm join-token -q worker) $(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')':2377' > /srv/salt/worker/docker-join.sh
+    sudo echo 'kubeadm join --token' $(kubeadm token list | awk 'NR==2{print $1}') $(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')':6443' > /srv/salt/worker/kubernetes-join.sh
     sudo salt '*' state.apply
 
 }

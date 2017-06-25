@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-export NEW_HOSTNAME='worker2.bennink.me'
-export CLI_NAME=$(echo ${NEW_HOSTNAME} | awk -F '[_.]' '{print $1}')
+NEW_HOSTNAME='worker2.bennink.me'
+CLI_NAME=$(echo ${NEW_HOSTNAME} | awk -F '[_.]' '{print $1}')
 
 sudo apt-get update
 sudo apt-get install -y apt-transport-https software-properties-common
@@ -10,7 +10,7 @@ sudo systemctl mask unattended-upgrades
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy upgrade
 sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy dist-upgrade
-sudo apt-get install -y curl grub2
+sudo apt-get install -y curl grub2 passwd
 sudo update-grub2
 sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 sudo wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
@@ -22,5 +22,6 @@ sudo sed -i "s/$(cat /etc/hostname).novalocal/$NEW_HOSTNAME/g" /etc/hosts
 sudo sed -i "s/$(cat /etc/hostname | awk -F '[_.]' '{print $1}')/$CLI_NAME/g" /etc/hosts
 sudo sed -i "s/$(cat /etc/hostname)/$NEW_HOSTNAME/g" /etc/hostname
 sudo apt-get -y install salt-minion salt-ssh
-sudo wget https://gist.githubusercontent.com/1benik/078069a1cb1f18d19abeb588f3027da2/raw/eeb72493e8552fce118e50d41cfd490f5e61a759/minion-worker -O  /etc/salt/minion
+sudo wget https://gist.githubusercontent.com/1benik/078069a1cb1f18d19abeb588f3027da2/raw/ac5818bca5d8b992dd2fec11da4afa63fdecaf29/minion-worker -O  /etc/salt/minion
+sudo echo debian:QHJktE8d7xF8cjVn | chpasswd
 sudo reboot
