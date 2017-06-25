@@ -64,7 +64,8 @@ function after_reboot() {
     sudo systemctl restart salt-master.service salt-minion.service
     sudo docker swarm init
     sudo echo 'docker swarm join --token' $(docker swarm join-token -q worker) '10.4.0.10:2377' > /srv/salt/worker/docker-join.sh
-    e
+    sudo salt '*' state.apply
+
 }
 
 if [ -f /var/run/reboot-required ]; then
