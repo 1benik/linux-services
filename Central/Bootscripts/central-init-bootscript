@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-sudo wget https://gist.githubusercontent.com/1benik/887138d49357e3265b5eee028957952a/raw/03faaf1e41c9b41871f5d7b1da5e131bf55b33d3/central-init.sh -O /etc/init.d/central-init.sh
+sudo wget https://gist.githubusercontent.com/1benik/887138d49357e3265b5eee028957952a/raw/6cf8162922c26d08dc05d306253bdfb312f3bb55/central-init.sh -O /etc/init.d/central-init.sh
 chmod +x /etc/init.d/central-init.sh
 sudo /etc/init.d/central-init.sh

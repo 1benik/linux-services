@@ -78,9 +78,11 @@ function after_reboot() {
     sudo apt-get update
     sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
     sudo kubeadm init
-    sudo cp /etc/kubernetes/admin.conf $HOME/
-    chown $(id -u):$(id -g) $HOME/admin.conf
-    KUBECONFIG=$HOME/admin.conf
+    sudo cp /etc/kubernetes/admin.conf /home/debian/
+    sudo chown $(id -u):$(id -g) ~/admin.conf
+    echo '' >> ~/.profile
+    echo 'export KUBECONFIG=~/admin.conf' >> ~/.profile
+    source ~/.profile
     kubectl apply -n kube-system -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
     sudo docker swarm init
     echo "docker swarm join --token $(sudo docker swarm join-token -q worker) $(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*'):2377" | sudo tee /srv/salt/worker/docker-join.sh
