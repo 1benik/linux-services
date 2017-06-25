@@ -89,7 +89,7 @@ function after_reboot() {
 if [ -f /var/run/reboot-required ]; then
     after_reboot
     sudo rm -f /var/run/reboot_required
-    sudo update-rc.d central_init.sh remove
+    sudo update-rc.d central-init.sh remove
     sudo rm -f /etc/init.d/central-init.sh
 else
     before_reboot
