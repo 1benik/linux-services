@@ -94,6 +94,6 @@ if [ -f /var/run/reboot-required ]; then
 else
     before_reboot
     sudo touch /var/run/reboot-required
-    sudo update-rc.d central_init.sh defaults
+    sudo update-rc.d central-init.sh defaults
     sudo reboot
 fi
