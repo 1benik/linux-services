@@ -49,7 +49,7 @@ function after_reboot() {
     WORKER2_IP=$(sshpass -p 'QHJktE8d7xF8cjVn' ssh -o StrictHostKeyChecking=no debian@worker2.bennink.me "ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*'")
     sudo sed -i "s/MASTER/$WORKER1_IP/g" /etc/munin/munin.conf
     sudo sed -i "s/MASTER/$WORKER2_IP/g" /etc/munin/munin.conf
-    sudo wget https://gist.githubusercontent.com/1benik/551b303a82ba4d1c54c30959042fa80c/raw/790c1301cf7603b69e1364198d6a3ffab0d2097f/central.bennink.me -O /etc/nginx/sites-available/central.bennink.me
+    sudo wget https://gist.githubusercontent.com/1benik/551b303a82ba4d1c54c30959042fa80c/raw/54ccee000173c43024317698101c9b53bc355091/central.bennink.me -O /etc/nginx/sites-available/central.bennink.me
     sudo wget https://gist.githubusercontent.com/1benik/98b8c65506064bc7c381eb77e0d8ecb6/raw/8c78962a8b218b5c1cf7ebc3e7897aeb740580bc/.htpasswd -O /etc/nginx/.htpasswd
     sudo wget https://gist.githubusercontent.com/1benik/2c1ef1d34665d17aa7527b0e94545afe/raw/779439a769381006ae7b16df14aee32fbb3ca96a/certificate.crt -O /etc/ssl/certs/central.bennink.me.crt
     sudo wget https://gist.githubusercontent.com/1benik/63b253ce2363701af53e889da528952a/raw/399294abd67b6fa4a4886e60ca61e5254861c616/private.key -O /etc/ssl/private/central.bennink.me.key
