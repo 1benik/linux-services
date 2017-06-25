@@ -70,8 +70,8 @@ function after_reboot() {
     sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
     sudo cp /etc/kubernetes/admin.conf $HOME/
     sudo chown $(id -u):$(id -g) $HOME/admin.conf
-    sudo kubectl apply -n kube-system -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
     export KUBECONFIG=$HOME/admin.conf
+    sudo kubectl apply -n kube-system -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
     sudo docker swarm init
     sudo echo 'docker swarm join --token' $(docker swarm join-token -q worker) '10.4.0.10:2377' > /srv/salt/worker/docker-join.sh
     sudo echo 'kubeadm join --token' $(kubeadm token list | awk 'NR==2{print $1}') '10.4.0.10:6443' > /srv/salt/worker/kubernetes-join.sh
