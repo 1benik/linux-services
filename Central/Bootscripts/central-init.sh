@@ -23,13 +23,14 @@ function before_reboot() {
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy upgrade
     sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' --force-yes -fuy dist-upgrade
-    sudo apt-get install -y curl
+    sudo apt-get install -y curl grub2
+    sudo update-grub2
     sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
     sudo wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
     sudo wget https://gist.githubusercontent.com/1benik/9985b33f43a6b806b93badce37d33c34/raw/4b9762af0e72f8e6a691cc7286b1ad7fb0d7b335/saltstack.list -O /etc/apt/sources.list.d/saltstack.list
     sudo rm -f /etc/localtime
     sudo ln -s /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
-    sudo sed -i "s/$(cat /etc/hostname)/$NEW_HOSTNAME/g" /etc/hosts
+    sudo sed -i "s/$(cat /etc/hostname).novalocal/$NEW_HOSTNAME/g" /etc/hosts
     sudo sed -i "s/$(cat /etc/hostname | awk -F '[_.]' '{print $1}')/$CLI_NAME/g" /etc/hosts
     sudo sed -i "s/$(cat /etc/hostname)/$NEW_HOSTNAME/g" /etc/hostname
 
@@ -61,9 +62,19 @@ function after_reboot() {
     sudo wget https://gist.githubusercontent.com/1benik/e3c3dce13d54e5b04b4f7baf23255cb6/raw/ffe7193e60f6df9ba17124f834fc9d7f3880cd83/worker.sls -O /srv/salt/worker.sls
     sudo wget https://gist.githubusercontent.com/1benik/900dce3bf9dbf5cee18333571ae36863/raw/2548a64f33d3e08c51990d51eefa0100f5d74d47/syslog-ng-workers.conf -O /srv/salt/worker/syslog-ng.conf
     sudo wget https://gist.githubusercontent.com/1benik/453fc85e4e111072ccea4af243a3250d/raw/82e1e86b318ecb5053bcc4f000ab1c569e1be3fd/munin-node.conf -O /srv/salt/worker/munin-node.conf
+    sudo wget https://gist.githubusercontent.com/1benik/1ac59c666e7bc6954763dd7982907e7a/raw/6fa81d32e0eb10cce3b09f7b147a68034532b295/kubernetes.list -O /srv/salt/worker/kubernetes.list
     sudo systemctl restart salt-master.service salt-minion.service
+    sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    sudo wget https://gist.githubusercontent.com/1benik/1ac59c666e7bc6954763dd7982907e7a/raw/6fa81d32e0eb10cce3b09f7b147a68034532b295/kubernetes.list -O /etc/apt/sources.list.d/kubernetes.list
+    sudo apt-get update
+    sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+    sudo cp /etc/kubernetes/admin.conf $HOME/
+    sudo chown $(id -u):$(id -g) $HOME/admin.conf
+    sudo kubectl apply -n kube-system -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    export KUBECONFIG=$HOME/admin.conf
     sudo docker swarm init
     sudo echo 'docker swarm join --token' $(docker swarm join-token -q worker) '10.4.0.10:2377' > /srv/salt/worker/docker-join.sh
+    sudo echo 'kubeadm join --token' $(kubeadm token list | awk 'NR==2{print $1}') '10.4.0.10:6443' > /srv/salt/worker/kubernetes-join.sh
     sudo salt '*' state.apply
 
 }
@@ -72,7 +83,7 @@ if [ -f /var/run/reboot-required ]; then
     after_reboot
     sudo rm -f /var/run/reboot_required
     sudo update-rc.d central_init.sh remove
-    sudo rm -f ./central-init.sh
+    sudo rm -f /etc/init.d/central-init.sh
 else
     before_reboot
     sudo touch /var/run/reboot-required
