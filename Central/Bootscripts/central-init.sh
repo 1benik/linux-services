@@ -72,7 +72,7 @@ if [ -f /var/run/reboot-required ]; then
     after_reboot
     sudo rm -f /var/run/reboot_required
     sudo update-rc.d central_init.sh remove
-    sudo rm -f ~/central-init.sh
+    sudo rm -f ./central-init.sh
 else
     before_reboot
     sudo touch /var/run/reboot-required
