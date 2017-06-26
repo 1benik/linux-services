@@ -66,7 +66,7 @@ function after_reboot() {
     sudo wget https://gist.githubusercontent.com/1benik/c66a2e0ef2054c41811f4b21bcc1bfb3/raw/1609698f139a972c88cb091e2ac84918e8d894fc/master -O /etc/salt/master
     sudo wget https://gist.githubusercontent.com/1benik/e21c6c7669590cb849c97b47a410aa4f/raw/68335b458dcc91ea8ad4dacde234583d0f342f2b/minion-central -O  /etc/salt/minion
     sudo wget https://gist.githubusercontent.com/1benik/617169ce54c80389412a7d1e4c445a6e/raw/3a85332fb8d03821e20a03a3554a269fc1581bda/top.sls -O /srv/salt/top.sls
-    sudo wget https://gist.githubusercontent.com/1benik/e3c3dce13d54e5b04b4f7baf23255cb6/raw/bfe17dc76664c45b5cf91894c9f6ed52e7c1a32f/worker.sls -O /srv/salt/worker.sls
+    sudo wget https://gist.githubusercontent.com/1benik/e3c3dce13d54e5b04b4f7baf23255cb6/raw/9575ba6cc178509c06e5cc7402a95892160e2abd/worker.sls -O /srv/salt/worker.sls
     sudo wget https://gist.githubusercontent.com/1benik/900dce3bf9dbf5cee18333571ae36863/raw/85cb2e94e24d30d2ba4d448ab59cdaefb3b3ad2e/syslog-ng-workers.conf -O /srv/salt/worker/syslog-ng.conf
     sudo sed -i "s/MASTER/$(ip addr show eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*')/g" /srv/salt/worker/syslog-ng.conf
     sudo wget https://gist.githubusercontent.com/1benik/453fc85e4e111072ccea4af243a3250d/raw/bc13a777467d1991ea45c27c70bf47305ef0d863/munin-node.conf -O /srv/salt/worker/munin-node.conf
@@ -79,7 +79,7 @@ function after_reboot() {
     sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
     sudo kubeadm init
     sudo cp /etc/kubernetes/admin.conf /home/debian/
-    sudo chown $(id -u):$(id -g) ~/admin.conf
+    sudo chown $(id -u):$(id -g) /home/debian/admin.conf
     echo '' >> ~/.profile
     echo 'export KUBECONFIG=~/admin.conf' >> ~/.profile
     source ~/.profile
